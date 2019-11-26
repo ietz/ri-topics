@@ -9,5 +9,3 @@ dependencies:
   - python=3.7.5
   - python-dotenv=0.10.3
   - requests=2.22.0
-  - pip:
-      - dataclasses-json==0.3.6

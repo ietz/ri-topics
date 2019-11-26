@@ -1,28 +1,25 @@
 from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 from typing import List
 
 from ri_topics.openreq.session import OpenReqServiceSession
+from ri_topics.util import init_from_dicts
 
 
-@dataclass_json
 @dataclass
 class Topic:
     label: str
     score: int
 
 
-@dataclass_json
 @dataclass
 class Topics:
     first_class: Topic
     second_class: Topic
 
 
-@dataclass_json
 @dataclass
 class Tweet:
-    created_at: int
+    # created_at: int
     created_at_full: str
     favorite_count: int
     retweet_count: int
@@ -50,4 +47,4 @@ class RiStorageTwitter:
 
     def get_all_tweets_by_account_name(self, account_name: str) -> List[Tweet]:
         response = self.session.get(f'/account_name/{account_name}/all')
-        return Tweet.schema().loads(response.text, many=True)
+        return init_from_dicts(Tweet, response.json())
