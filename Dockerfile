@@ -7,4 +7,4 @@ RUN /opt/conda/bin/conda env create -f environment.yml
 COPY . .
 
 EXPOSE 8888
-CMD [ "/opt/conda/bin/conda", "run", "-n", "ri-topics", "python", "./ri_topics/server.py" ]
+CMD [ "/opt/conda/bin/conda", "run", "-n", "ri-topics", "python", "./main.py" ]
