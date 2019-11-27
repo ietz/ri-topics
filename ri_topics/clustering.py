@@ -31,7 +31,7 @@ class Clusterer:
 
         return ClusterAssignment(labels=self.hdbscan.labels_, probabilities=self.hdbscan.probabilities_)
 
-    def assign(self, embeddings: np.ndarray):
+    def predict(self, embeddings: np.ndarray):
         embeddings_umap = self.umap.transform(embeddings)
         labels, probabilities = hdbscan.approximate_predict(self.hdbscan, embeddings_umap)
 
