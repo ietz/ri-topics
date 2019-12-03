@@ -19,7 +19,7 @@ class Topics:
 
 @dataclass
 class Tweet:
-    # created_at: int
+    created_at: int
     created_at_full: str
     favorite_count: int
     retweet_count: int
