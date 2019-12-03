@@ -3,6 +3,7 @@ import os
 
 import numpy as np
 from dotenv import load_dotenv
+from tqdm import tqdm
 
 from ri_topics.clustering import Clusterer
 from ri_topics.embedder import Embedder
@@ -20,20 +21,29 @@ if __name__ == '__main__':
         bearer_token=os.getenv('BEARER_TOKEN'),
     )
 
+    logger.info('Fetching tweets')
     tweets = rist.get_all_tweets_by_account_name('FitbitSupport')
+    logger.info(f'Retrieved {len(tweets)} tweets')
+
     texts = [tweet.text for tweet in tweets]
-    docs = [Document(text) for text in texts]
+    docs = [Document(text) for text in tqdm(texts, desc='Preprocessing', unit='Tweets')]
+
+    logger.info('Generating embeddings')
     embedder = Embedder()
     embedder.embed(docs)
     embeddings = np.array([doc.embedding for doc in docs])
 
+    logger.info('Running topic clustering')
     clusterer = Clusterer()
     assignment = clusterer.fit(embeddings, n_components=10, n_neighbors=40, min_dist=0, min_cluster_size=30, min_samples=20)
 
-    summarizer = Summarizer()
-    summarizer.fit(docs, assignment)
+    # create pd dataframe from tweets + labels & probabilites => tweet_df
+    # select representative for each centroid based on probability => topic_df
 
-    print(summarizer._representatives)
+    # summarizer = Summarizer()
+    # summarizer.fit(docs, assignment)
+
+    # print(summarizer._representatives)
 
     logger.info('Starting server')
     app.run(host='0.0.0.0', port='8888')

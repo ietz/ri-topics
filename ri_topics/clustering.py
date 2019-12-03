@@ -1,3 +1,4 @@
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -5,6 +6,8 @@ import numpy as np
 import hdbscan
 from sklearn.preprocessing import StandardScaler
 import umap
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -23,9 +26,11 @@ class Clusterer:
             min_cluster_size: int, min_samples: int) -> ClusterAssignment:
         embeddings_st = StandardScaler().fit_transform(embeddings)
 
+        logger.info('Fitting UMAP')
         self.umap = umap.UMAP(n_components=n_components, n_neighbors=n_neighbors, min_dist=min_dist)
         embeddings_umap = self.umap.fit_transform(embeddings_st)
 
+        logger.info('Running HDBSCAN')
         self.hdbscan = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size, min_samples=min_samples, prediction_data=True)
         self.hdbscan.fit(embeddings_umap)
 
