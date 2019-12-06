@@ -1,13 +1,11 @@
-import logging
 from dataclasses import dataclass
 from typing import Optional
 
 import numpy as np
 import hdbscan
+from loguru import logger
 from sklearn.preprocessing import StandardScaler
 import umap
-
-logger = logging.getLogger(__name__)
 
 
 @dataclass

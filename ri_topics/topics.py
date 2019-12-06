@@ -1,16 +1,14 @@
 import dataclasses
-import logging
 from typing import List, Optional
 
 import pandas as pd
 import pandas.io.json
+from loguru import logger
 
 from ri_topics.clustering import Clusterer
 from ri_topics.embedder import Embedder
 from ri_topics.models import Tweet
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
-
-logger = logging.getLogger(__name__)
 
 
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
@@ -42,7 +40,6 @@ class TopicModel:
         logger.info(f'Fetching tweets for {self.account_name}')
         tweets = self.storage.get_all_tweets_by_account_name(self.account_name)
         logger.info(f'Retrieved {len(tweets)} tweets')
-        logger.info(f'Embedding tweets')
         embeddings = self.embedder.embed_tweets(tweets)
         logger.info(f'Building clustering model')
         assignment = self.clusterer.fit(embeddings, **clusterer_kwargs)
