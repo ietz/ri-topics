@@ -4,7 +4,11 @@ import pandas as pd
 from ri_topics.topics import TopicModel
 
 
-def find_trends(model: TopicModel, start, end):
+def find_top(model: TopicModel, start, end) -> pd.DataFrame:
+    return model.count_tweets_by_topic(start, end).loc[0:]
+
+
+def find_trends(model: TopicModel, start, end) -> pd.DataFrame:
     start_ts = pd.Timestamp(start)
     end_ts = pd.Timestamp(end)
     window_length = end_ts - start_ts

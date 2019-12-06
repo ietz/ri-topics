@@ -1,27 +1,44 @@
 from dataclasses import dataclass
-from typing import Optional
-
-
-@dataclass
-class Tweet:
-    username: str
-    text: str
 
 
 @dataclass
 class Topic:
-    id: str
-    name: Optional[str]
-    representative: Tweet
+    topic_id: str
+    representative_id: str
 
 
 @dataclass
-class OccurrenceCount:
+class TrendOccurrences:
+    before: int
     current: int
-    previous: int
 
 
 @dataclass
 class Trend(Topic):
-    trendiness_score: float
-    occurrences: OccurrenceCount
+    score: float
+    occurrences: TrendOccurrences
+
+    @staticmethod
+    def from_df_tuple(t):
+        return Trend(
+            topic_id=t.Index,
+            representative_id=t.representative_id,
+            score=t.score,
+            occurrences=TrendOccurrences(
+                before=t.before_count,
+                current=t.current_count,
+            )
+        )
+
+
+@dataclass
+class TopicActivity(Topic):
+    occurrences: int
+
+    @staticmethod
+    def from_df_tuple(t):
+        return TopicActivity(
+            topic_id=t.Index,
+            representative_id=t.representative_id,
+            occurrences=t.tweet_count,
+        )

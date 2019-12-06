@@ -23,7 +23,5 @@ if __name__ == '__main__':
     manager = TopicModelManager(embedder, rist)
     model = manager.get('FitbitSupport')
 
-    print(find_trends(model, start='2019-12-01', end='2019-12-03'))
-
-    # app.model_manager = manager
-    # app.run(host='0.0.0.0', port='8888')
+    app.model_manager = manager
+    app.run(host='0.0.0.0', port='8888')

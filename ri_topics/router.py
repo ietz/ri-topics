@@ -1,14 +1,38 @@
-from flask import Flask, escape, request, jsonify
+from flask import Flask, request, jsonify
 
-from ri_topics.mock_data import generate_top_trend, generate_flop_trend
+from ri_topics.models import Trend, TopicActivity
+from ri_topics.topics import TopicModelManager
+from ri_topics.trend import find_trends, find_top
 
-app = Flask(__name__)
+
+class RiTopicsApp(Flask):
+    model_manager: TopicModelManager
 
 
-@app.route('/<account_name>')
-def hello(account_name: str):
+app = RiTopicsApp(__name__)
+
+
+@app.route('/<account_name>/trends')
+def trends(account_name: str):
+    start = request.args.get('start')
+    end = request.args.get('end')
+
+    model = app.model_manager.get(account_name)
+    trend_df = find_trends(model, start, end).sort_values('score')
+    all_trends = [Trend.from_df_tuple(t) for t in trend_df.itertuples()]
+
     return jsonify({
-        'top': [generate_top_trend() for _ in range(3)],
-        'flop': [generate_flop_trend() for _ in range(3)],
+        'falling': all_trends[:3],
+        'rising': all_trends[-3:][::-1],
     })
 
+
+@app.route('/<account_name>/frequent')
+def frequent(account_name: str):
+    start = request.args.get('start')
+    end = request.args.get('end')
+
+    model = app.model_manager.get(account_name)
+    top_df = find_top(model, start, end).sort_values('tweet_count', ascending=False)
+
+    return jsonify([TopicActivity.from_df_tuple(t) for t in top_df.itertuples()])

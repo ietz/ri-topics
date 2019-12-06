@@ -10,8 +10,7 @@ from loguru import logger
 from ri_topics.clustering import Clusterer
 from ri_topics.config import MODEL_DIR
 from ri_topics.embedder import Embedder
-from ri_topics.models import Tweet
-from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
+from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter, Tweet
 
 
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:

@@ -6,7 +6,7 @@ from loguru import logger
 from sentence_transformers import SentenceTransformer
 from tqdm import tqdm
 
-from ri_topics.models import Tweet
+from ri_topics.openreq.ri_storage_twitter import Tweet
 from ri_topics.preprocessing import Document
 
 
