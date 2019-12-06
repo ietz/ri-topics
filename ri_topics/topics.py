@@ -14,7 +14,7 @@ from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
     labeled_tweets = tweet_df[tweet_df['label'] >= 0]
     representative_idxs = labeled_tweets.groupby('label')['probability'].idxmax()
-    return tweet_df.iloc[representative_idxs].set_index('label')
+    return tweet_df.loc[representative_idxs].reset_index().set_index('label')
 
 
 def tweets_to_df(tweets: List[Tweet]):
@@ -23,7 +23,7 @@ def tweets_to_df(tweets: List[Tweet]):
     return pd.DataFrame({
         'status_id': df['status_id'],
         'created_at': pd.to_datetime(df['created_at_full']),
-    })
+    }).set_index('status_id')
 
 
 class TopicModel:
