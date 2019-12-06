@@ -9,7 +9,7 @@ class Document:
         nlp = English()
         nlp.add_pipe(nlp.create_pipe('sentencizer'))
         doc = nlp(text)
-        self.sentences = [Sentence(str(sent)) for sent in doc]
+        self.sentences = [Sentence(str(sent)) for sent in doc.sents]
 
     @property
     def embedding(self) -> np.ndarray:

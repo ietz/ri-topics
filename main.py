@@ -1,12 +1,14 @@
 import os
 
 from dotenv import load_dotenv
+from loguru import logger
 
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
 from ri_topics.topics import TopicModel
 
 if __name__ == '__main__':
+    logger.info('Loading')
     load_dotenv()
 
     embedder = Embedder()
