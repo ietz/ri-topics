@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
-from ri_topics.topics import TopicModel
+from ri_topics.topics import TopicModelManager
 
 if __name__ == '__main__':
     load_dotenv()
@@ -15,7 +15,7 @@ if __name__ == '__main__':
         bearer_token=os.getenv('BEARER_TOKEN'),
     )
 
-    model = TopicModel('FitbitSupport', embedder=embedder, storage=rist)
-    model.train(n_components=10, n_neighbors=40, min_dist=0, min_cluster_size=30, min_samples=20)
+    manager = TopicModelManager(embedder, rist)
+    model = manager.get('FitbitSupport')
 
     # app.run(host='0.0.0.0', port='8888')
