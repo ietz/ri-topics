@@ -1,12 +1,15 @@
 import os
+import warnings
 
 from dotenv import load_dotenv
+from numba.errors import NumbaPerformanceWarning
 
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
 from ri_topics.topics import TopicModelManager
 
 if __name__ == '__main__':
+    warnings.filterwarnings('ignore', category=NumbaPerformanceWarning)
     load_dotenv()
 
     embedder = Embedder()
