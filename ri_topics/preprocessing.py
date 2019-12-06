@@ -1,15 +1,24 @@
 from dataclasses import dataclass
+from typing import List
 
 import numpy as np
 from spacy.lang.en import English
 
 
+class Sentencizer:
+    def __init__(self):
+        self.nlp = English()
+        self.nlp.add_pipe(self.nlp.create_pipe('sentencizer'))
+
+    def split(self, text: str) -> List[str]:
+        return [str(sent) for sent in self.nlp(text).sents]
+
+
 class Document:
+    sentencizer = Sentencizer()
+
     def __init__(self, text):
-        nlp = English()
-        nlp.add_pipe(nlp.create_pipe('sentencizer'))
-        doc = nlp(text)
-        self.sentences = [Sentence(str(sent)) for sent in doc.sents]
+        self.sentences = [Sentence(sent) for sent in self.sentencizer.split(text)]
 
     @property
     def embedding(self) -> np.ndarray:
