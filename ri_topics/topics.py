@@ -2,7 +2,6 @@ import dataclasses
 import pickle
 from pathlib import Path
 from typing import List, Optional
-from weakref import WeakValueDictionary
 
 import pandas as pd
 import pandas.io.json
@@ -18,7 +17,11 @@ from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
     labeled_tweets = tweet_df[tweet_df['label'] >= 0]
     representative_idxs = labeled_tweets.groupby('label')['probability'].idxmax()
-    return tweet_df.loc[representative_idxs].reset_index().set_index('label')
+    representatives = tweet_df.loc[representative_idxs]
+    return pd.DataFrame({
+        'label': representatives['label'],
+        'representative_id': representatives.index.to_series(),
+    }).set_index('label')
 
 
 def tweets_to_df(tweets: List[Tweet]):
@@ -36,6 +39,7 @@ class TopicModel:
 
         self.clusterer = Clusterer()
         self.tweet_df: Optional[pd.DataFrame] = None
+        self.created_index: Optional[pd.DatetimeIndex] = None
         self.repr_df: Optional[pd.DataFrame] = None
 
     def train(self, embedder: Embedder, storage: RiStorageTwitter, **clusterer_kwargs):
@@ -50,8 +54,18 @@ class TopicModel:
         self.tweet_df = tweets_to_df(tweets)
         self.tweet_df['label'] = assignment.labels
         self.tweet_df['probability'] = assignment.probabilities
+        self.created_index = pd.DatetimeIndex(self.tweet_df['created_at'])
 
         self.repr_df = select_representatives(self.tweet_df)
+
+    def count_tweets_by_topic(self, start_ts=None, end_ts=None) -> pd.DataFrame:
+        timestamps = self.created_index.tz_localize(None)
+        mask = (start_ts <= timestamps) & (timestamps < end_ts)
+        tweets = self.tweet_df.iloc[mask]
+        tweet_counts = tweets.groupby('label').size().rename('tweet_count')
+        act = self.repr_df.join(tweet_counts, how='outer')
+        act['tweet_count'] = act['tweet_count'].fillna(0)
+        return act
 
 
 class TopicModelManager:
