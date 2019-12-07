@@ -1,6 +1,8 @@
 import dataclasses
-from typing import List, Any, Dict
+from typing import List, Any, Dict, Optional
 from urllib.parse import urljoin
+
+import pandas as pd
 
 
 def force_trailing_slash(url: str) -> str:
@@ -32,3 +34,13 @@ def is_between(a, start=None, end=None):
         return True | (a == None)
     else:
         return (start is None or start <= a) & (end is None or a < end)
+
+
+def df_without(left: pd.DataFrame, right: Optional[pd.DataFrame]) -> pd.DataFrame:
+    """Performs left outer exclusive join. Result contains all rows from the left df except for
+    those which are also present in the right df."""
+    if right is None:
+        return left
+
+    idxs = left.index.difference(right.index)
+    return left.loc[idxs]

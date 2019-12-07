@@ -21,9 +21,8 @@ class Embedder:
         for sentence, embedding in zip(sentences, embeddings):
             sentence.embedding = embedding
 
-    def embed_tweets(self, tweets: List[Tweet], show_progess=True) -> np.ndarray:
-        logger.info('Preprocessing tweets')
-        texts = [tweet.text for tweet in tweets]
+    def embed_texts(self, texts: List[str], show_progess=True) -> np.ndarray:
+        logger.info('Preprocessing texts')
         text_it = texts if not show_progess else tqdm(texts, desc='Preprocessing', unit='Tweets')
         docs = [Document(text) for text in text_it]
 
