@@ -7,11 +7,16 @@ from loguru import logger
 
 def setup_logging():
     hide_known_warnings()
+    intercept_warnings()
     intercept_standard_logging()
 
 
 def hide_known_warnings():
     warnings.filterwarnings('ignore', category=numba.errors.NumbaPerformanceWarning)
+
+
+def intercept_warnings():
+    warnings.showwarning = lambda message, *args, **kwargs: logger.warning(message)
 
 
 def intercept_standard_logging():
