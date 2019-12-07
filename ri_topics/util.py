@@ -44,3 +44,7 @@ def df_without(left: pd.DataFrame, right: Optional[pd.DataFrame]) -> pd.DataFram
 
     idxs = left.index.difference(right.index)
     return left.loc[idxs]
+
+
+def clamp(v_min, v, v_max):
+    return max(v_min, min(v, v_max))

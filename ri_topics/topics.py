@@ -46,19 +46,19 @@ class TopicModel:
         self.created_index: Optional[pd.DatetimeIndex] = None
         self.repr_df: Optional[pd.DataFrame] = None
 
-    def train(self, embedder: Embedder, storage: RiStorageTwitter, **clusterer_kwargs):
+    def train(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Training model {self.account_name}')
 
-        def assign(embeddings: np.ndarray) -> ClusterAssignment:
-            return self.clusterer.fit(embeddings, **clusterer_kwargs)
-
-        self.tweet_df = self._process_new_tweets(embedder, storage, assign)
+        self.tweet_df = self._process_new_tweets(embedder, storage, assign=self.clusterer.fit)
         self.repr_df = select_representatives(self.tweet_df)
+
+        n_assigned = np.sum(self.tweet_df['label'])
+        logger.info(f'Assigned {len(self.tweet_df)}')
 
     def update(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Predicting new tweets for {self.account_name}')
 
-        update_df = self._process_new_tweets(embedder, storage, self.clusterer.predict)
+        update_df = self._process_new_tweets(embedder, storage, assign=self.clusterer.predict)
         self._log_assignment_rate(update_df)
         self.tweet_df = self.tweet_df.append(update_df)
 
@@ -138,7 +138,7 @@ class TopicModelManager:
     def _build(self, account_name: str) -> TopicModel:
         logger.info(f'Building model for {account_name}')
         model = TopicModel(account_name)
-        model.train(embedder=self.embedder, storage=self.storage, n_components=10, n_neighbors=40, min_dist=0, min_cluster_size=30, min_samples=20)
+        model.train(embedder=self.embedder, storage=self.storage)
         return model
 
     def _update(self, account_name: str) -> TopicModel:
