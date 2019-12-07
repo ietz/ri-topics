@@ -62,18 +62,25 @@ class TopicModel:
         self._log_assignment_rate(update_df)
         self.tweet_df = self.tweet_df.append(update_df)
 
-    def _process_new_tweets(self, embedder: Embedder, storage: RiStorageTwitter, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
+    def _get_new_tweets(self, storage: RiStorageTwitter) -> pd.DataFrame:
         logger.info(f'Fetching tweets for {self.account_name}')
         tweets = storage.get_all_tweets_by_account_name(self.account_name)
-        full_tweets_df = df_without(tweets_to_df(tweets), self.tweet_df)
-        logger.info(f'Retrieved {len(full_tweets_df)} new tweets')
+        df = df_without(tweets_to_df(tweets), self.tweet_df)
+        logger.info(f'Retrieved {len(df)} new tweets')
 
-        embeddings = embedder.embed_texts(full_tweets_df['text'])
+        df_en = df[df['lang'] == 'en']
+        n_discarded = len(df) - len(df_en)
+        logger.info(f'Discarding {n_discarded} ({n_discarded / len(df):0.01%}) non-english tweets')
+        return df_en
+
+    def _process_new_tweets(self, embedder: Embedder, storage: RiStorageTwitter, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
+        full_tweet_df = self._get_new_tweets(storage)
+        embeddings = embedder.embed_texts(full_tweet_df['text'])
         logger.info('Assigning tweets to clusters')
         assignment = assign(embeddings)
 
         logger.info(f'Processing clusters')
-        update_df = full_tweets_df[TopicModel.persisted_tweet_attributes].copy()
+        update_df = full_tweet_df[TopicModel.persisted_tweet_attributes].copy()
         update_df['label'] = assignment.labels
         update_df['probability'] = assignment.probabilities
 
