@@ -11,6 +11,7 @@ from ri_topics.clustering import Clusterer
 from ri_topics.config import MODEL_DIR
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter, Tweet
+from ri_topics.util import is_between
 
 
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
@@ -53,14 +54,12 @@ class TopicModel:
         self.tweet_df = tweets_to_df(tweets)
         self.tweet_df['label'] = assignment.labels
         self.tweet_df['probability'] = assignment.probabilities
-        self.created_index = pd.DatetimeIndex(self.tweet_df['created_at'])
 
         self.repr_df = select_representatives(self.tweet_df)
 
     def count_tweets_by_topic(self, start_ts=None, end_ts=None) -> pd.DataFrame:
-        timestamps = self.created_index.tz_localize(None)
-        mask = (start_ts <= timestamps) & (timestamps < end_ts)
-        tweets = self.tweet_df.iloc[mask]
+        mask = is_between(self.tweet_df['created_at'], start_ts, end_ts)
+        tweets = self.tweet_df[mask]
         tweet_counts = tweets.groupby('label').size().rename('tweet_count')
         act = self.repr_df.join(tweet_counts, how='outer')
         act['tweet_count'] = act['tweet_count'].fillna(0)

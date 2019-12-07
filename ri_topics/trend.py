@@ -9,8 +9,8 @@ def find_top(model: TopicModel, start, end) -> pd.DataFrame:
 
 
 def find_trends(model: TopicModel, start, end) -> pd.DataFrame:
-    start_ts = pd.Timestamp(start)
-    end_ts = pd.Timestamp(end)
+    start_ts = pd.Timestamp(start, tz='UTC')
+    end_ts = pd.Timestamp(end, tz='UTC')
     window_length = end_ts - start_ts
     before_ts = start_ts - window_length
 

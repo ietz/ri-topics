@@ -24,3 +24,11 @@ def init_from_dicts(dataclass, data_dicts: List[Dict[str, Any]]):
         dataclass(**{key: (value if key not in nested_values else nested_values[key][idx]) for idx, (key, value) in enumerate(data_dict.items()) if key in field_names})
         for data_dict in data_dicts
     ]
+
+
+def is_between(a, start=None, end=None):
+    if start is None and end is None:
+        # noinspection PyComparisonWithNone
+        return True | (a == None)
+    else:
+        return (start is None or start <= a) & (end is None or a < end)

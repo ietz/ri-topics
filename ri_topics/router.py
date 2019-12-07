@@ -29,8 +29,8 @@ def trends(account_name: str):
 
 @app.route('/<account_name>/frequent')
 def frequent(account_name: str):
-    start = request.args.get('start')
-    end = request.args.get('end')
+    start = request.args.get('start', default=None)
+    end = request.args.get('end', default=None)
 
     model = app.model_manager.get(account_name)
     top_df = find_top(model, start, end).sort_values('tweet_count', ascending=False)
