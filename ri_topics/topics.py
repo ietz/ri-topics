@@ -53,7 +53,8 @@ class TopicModel:
         self.repr_df = select_representatives(self.tweet_df)
 
         n_assigned = np.sum(self.tweet_df['label'])
-        logger.info(f'Assigned {len(self.tweet_df)}')
+        logger.info(f'Assigned {n_assigned} ({n_assigned/len(self.tweet_df):0.01%}) tweets '
+                    f'into {len(self.repr_df)} clusters')
 
     def update(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Predicting new tweets for {self.account_name}')
