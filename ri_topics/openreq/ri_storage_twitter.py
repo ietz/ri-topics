@@ -43,7 +43,8 @@ class RiStorageTwitter:
 
     def get_all_account_names(self) -> List[str]:
         response = self.session.get(f'/account_name/all')
-        return response.json()['twitter_account_names']
+        all_names = response.json()['twitter_account_names']
+        return [name for name in all_names if name]  # required to filter out invalid account ""
 
     def get_all_tweets_by_account_name(self, account_name: str) -> List[Tweet]:
         response = self.session.get(f'/account_name/{account_name}/all')
