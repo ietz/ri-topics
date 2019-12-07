@@ -123,10 +123,27 @@ class TopicModelManager:
         self._cache(model)
         self._persist(model)
 
+    def prepare_all(self):
+        for name in self.model_names:
+            self.get(name)  # "touch" the model to initialize it
+
+    def update_all(self):
+        for name in self.model_names:
+            self.save(self._update(name))
+
+    @property
+    def model_names(self) -> List[str]:
+        return self.storage.get_all_account_names()
+
     def _build(self, account_name: str) -> TopicModel:
         logger.info(f'Building model for {account_name}')
         model = TopicModel(account_name)
         model.train(embedder=self.embedder, storage=self.storage, n_components=10, n_neighbors=40, min_dist=0, min_cluster_size=30, min_samples=20)
+        return model
+
+    def _update(self, account_name: str) -> TopicModel:
+        model = self.get(account_name)
+        model.update(self.embedder, self.storage)
         return model
 
     def _cache(self, model: TopicModel):

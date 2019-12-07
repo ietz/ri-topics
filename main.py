@@ -18,7 +18,7 @@ if __name__ == '__main__':
     )
 
     manager = TopicModelManager(embedder, rist)
-    model = manager.get('FitbitSupport')
+    manager.prepare_all()
 
     app.model_manager = manager
     app.run(host='0.0.0.0', port='8888')
