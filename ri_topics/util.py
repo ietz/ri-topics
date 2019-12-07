@@ -23,8 +23,8 @@ def init_from_dicts(dataclass, data_dicts: List[Dict[str, Any]]):
     nested_values = {field.name: init_from_dicts(field.type, [data_dict[field.name] for data_dict in data_dicts]) for field in fields if dataclasses.is_dataclass(field.type)}
 
     return [
-        dataclass(**{key: (value if key not in nested_values else nested_values[key][idx]) for idx, (key, value) in enumerate(data_dict.items()) if key in field_names})
-        for data_dict in data_dicts
+        dataclass(**{key: (value if key not in nested_values else nested_values[key][idx]) for key, value in data_dict.items() if key in field_names})
+        for idx, data_dict in enumerate(data_dicts)
     ]
 
 
