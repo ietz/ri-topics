@@ -21,3 +21,9 @@
 1. Update the values in `.env` as needed
 1. Run the service  
    `python main.py`
+
+## Running tests
+To generate the SonarQube `coverage-reports/coverage.xml` as well as the user friendly HTML report in `coverage-reports/html`, run
+```bash
+python -m pytest --cov=. --cov-report=xml --cov-report=html
+```
