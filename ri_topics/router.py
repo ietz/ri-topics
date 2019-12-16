@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 
-from ri_topics.models import Trend, TopicActivity, TopicContent
+from ri_topics.dtos import Trend, TopicActivity, TopicContent
 from ri_topics.topics import TopicModelManager
 from ri_topics.trend import find_trends, find_top
 
