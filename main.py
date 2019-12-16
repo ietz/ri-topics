@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 from ri_topics.embedder import Embedder
 from ri_topics.logging import setup_logging
-from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter
+from ri_topics.openreq.ri_storage_twitter import OpenReqRiStorageTwitter
 from ri_topics.router import app
 from ri_topics.topics import TopicModelManager
 
@@ -12,7 +12,7 @@ if __name__ == '__main__':
     load_dotenv()
 
     embedder = Embedder()
-    rist = RiStorageTwitter(
+    rist = OpenReqRiStorageTwitter(
         base_url=os.getenv('RI_STORAGE_TWITTER_BASE_URL'),
         bearer_token=os.getenv('BEARER_TOKEN'),
     )
