@@ -45,7 +45,6 @@ class TopicModel:
 
         self.clusterer = Clusterer()
         self.tweet_df: Optional[pd.DataFrame] = None
-        self.created_index: Optional[pd.DatetimeIndex] = None
         self.repr_df: Optional[pd.DataFrame] = None
 
     def train(self, embedder: Embedder, storage: RiStorageTwitter):

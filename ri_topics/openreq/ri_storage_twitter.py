@@ -38,14 +38,6 @@ class Tweet:
 
 
 class RiStorageTwitter:
-    def get_all_account_names(self) -> List[str]:
-        raise NotImplementedError()
-
-    def get_all_tweets_by_account_name(self, account_name: str) -> List[Tweet]:
-        raise NotImplementedError()
-
-
-class OpenReqRiStorageTwitter(RiStorageTwitter):
     def __init__(self, base_url: str, bearer_token: str):
         self.session = OpenReqServiceSession(base_url, bearer_token)
 
@@ -55,5 +47,5 @@ class OpenReqRiStorageTwitter(RiStorageTwitter):
         return [name for name in all_names if name]  # required to filter out invalid account ""
 
     def get_all_tweets_by_account_name(self, account_name: str) -> List[Tweet]:
-        response = self.session.get(f'/account_name/{account_name}/all')
+        response = self.session.get(f'/account_name/{account_name}/currentweek')
         return init_from_dicts(Tweet, response.json())
