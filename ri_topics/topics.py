@@ -19,10 +19,10 @@ def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
     labeled_tweets = tweet_df[tweet_df['label'] >= 0]
     representative_idxs = labeled_tweets.groupby('label')['probability'].idxmax()
     representatives = tweet_df.loc[representative_idxs]
-    return pd.DataFrame({
-        'label': representatives['label'],
-        'representative_id': representatives.index.to_series(),
-    }).set_index('label')
+    return representatives \
+        .reset_index() \
+        .rename(columns={'status_id': 'representative_id'}) \
+        .set_index('label')
 
 
 def tweets_to_df(tweets: List[Tweet]):
@@ -36,7 +36,8 @@ def tweets_to_df(tweets: List[Tweet]):
 
 
 class TopicModel:
-    persisted_tweet_attributes = ['created_at']
+    persisted_tweet_attributes = ['label',  'probability'] + ['created_at']
+    persisted_representative_attributes = ['representative_id'] + ['text']
 
     def __init__(self, account_name):
         self.account_name = account_name
@@ -49,8 +50,10 @@ class TopicModel:
     def train(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Training model {self.account_name}')
 
-        self.tweet_df = self._process_new_tweets(embedder, storage, assign=self.clusterer.fit)
-        self.repr_df = select_representatives(self.tweet_df)
+        full_tweet_df = self._get_new_tweets(storage)
+        labeled_tweet_df = self._process_tweets(full_tweet_df, embedder, assign=self.clusterer.fit)
+        self.tweet_df = labeled_tweet_df[TopicModel.persisted_tweet_attributes]
+        self.repr_df = select_representatives(labeled_tweet_df)[TopicModel.persisted_representative_attributes]
 
         n_assigned = np.sum(self.tweet_df['label'] >= 0)
         logger.info(f'Assigned {n_assigned} ({n_assigned/len(self.tweet_df):0.01%}) tweets '
@@ -59,9 +62,10 @@ class TopicModel:
     def update(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Predicting new tweets for {self.account_name}')
 
-        update_df = self._process_new_tweets(embedder, storage, assign=self.clusterer.predict)
+        full_tweet_df = self._get_new_tweets(storage)
+        update_df = self._process_tweets(full_tweet_df, embedder, assign=self.clusterer.predict)
         self._log_assignment_rate(update_df)
-        self.tweet_df = self.tweet_df.append(update_df)
+        self.tweet_df = self.tweet_df.append(update_df[TopicModel.persisted_tweet_attributes])
 
     def _get_new_tweets(self, storage: RiStorageTwitter) -> pd.DataFrame:
         logger.info(f'Fetching tweets for {self.account_name}')
@@ -74,14 +78,13 @@ class TopicModel:
         logger.info(f'Discarding {n_discarded} ({n_discarded / len(df):0.01%}) non-english tweets')
         return df_en
 
-    def _process_new_tweets(self, embedder: Embedder, storage: RiStorageTwitter, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
-        full_tweet_df = self._get_new_tweets(storage)
+    def _process_tweets(self, full_tweet_df: pd.DataFrame, embedder: Embedder, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
         embeddings = embedder.embed_texts(full_tweet_df['text'])
         logger.info('Assigning tweets to clusters')
         assignment = assign(embeddings)
 
         logger.info(f'Processing clusters')
-        update_df = full_tweet_df[TopicModel.persisted_tweet_attributes].copy()
+        update_df = full_tweet_df.copy()
         update_df['label'] = assignment.labels
         update_df['probability'] = assignment.probabilities
 
