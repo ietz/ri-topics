@@ -52,7 +52,7 @@ class TopicModel:
         self.tweet_df = self._process_new_tweets(embedder, storage, assign=self.clusterer.fit)
         self.repr_df = select_representatives(self.tweet_df)
 
-        n_assigned = np.sum(self.tweet_df['label'])
+        n_assigned = np.sum(self.tweet_df['label'] >= 0)
         logger.info(f'Assigned {n_assigned} ({n_assigned/len(self.tweet_df):0.01%}) tweets '
                     f'into {len(self.repr_df)} clusters')
 
