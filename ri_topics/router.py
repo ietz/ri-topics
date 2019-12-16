@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 
-from ri_topics.models import Trend, TopicActivity
+from ri_topics.models import Trend, TopicActivity, TopicContent
 from ri_topics.topics import TopicModelManager
 from ri_topics.trend import find_trends, find_top
 
@@ -36,3 +36,15 @@ def frequent(account_name: str):
     top_df = find_top(model, start, end).sort_values('tweet_count', ascending=False)
 
     return jsonify([TopicActivity.from_df_tuple(t) for t in top_df.itertuples()])
+
+
+@app.route('/<account_name>/topics/<int:topic_id>')
+def topic(account_name: str, topic_id: int):
+    model = app.model_manager.get(account_name)
+
+    topic_tuple = model.topic_by_id(topic_id)
+    tweet_df = model \
+        .tweet_df[model.tweet_df['label'] == topic_id] \
+        .sort_values('probability', ascending=False)
+
+    return jsonify(TopicContent.from_df_tuple(topic_tuple, list(tweet_df.index)))

@@ -1,4 +1,5 @@
 import dataclasses
+from collections import namedtuple
 from typing import List, Any, Dict, Optional
 from urllib.parse import urljoin
 
@@ -48,3 +49,7 @@ def df_without(left: pd.DataFrame, right: Optional[pd.DataFrame]) -> pd.DataFram
 
 def clamp(v_min, v, v_max):
     return max(v_min, min(v, v_max))
+
+
+def series_to_namedtuple(index, series: pd.Series) -> namedtuple:
+    return namedtuple('Row', ['Index'] + list(series.index))(index, *series)

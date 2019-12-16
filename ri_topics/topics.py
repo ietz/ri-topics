@@ -1,5 +1,6 @@
 import dataclasses
 import pickle
+from collections import namedtuple
 from pathlib import Path
 from typing import List, Optional, Callable
 
@@ -12,7 +13,7 @@ from ri_topics.clustering import Clusterer, ClusterAssignment
 from ri_topics.config import MODEL_DIR
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter, Tweet
-from ri_topics.util import is_between, df_without
+from ri_topics.util import is_between, df_without, series_to_namedtuple
 
 
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
@@ -91,12 +92,18 @@ class TopicModel:
         return update_df
 
     def count_tweets_by_topic(self, start_ts=None, end_ts=None) -> pd.DataFrame:
-        mask = is_between(self.tweet_df['created_at'], start_ts, end_ts)
-        tweets = self.tweet_df[mask]
+        tweets = self._tweets_in_time_range(start_ts, end_ts)
         tweet_counts = tweets.groupby('label').size().rename('tweet_count')
         act = self.repr_df.join(tweet_counts, how='outer')
         act['tweet_count'] = act['tweet_count'].fillna(0)
         return act
+
+    def topic_by_id(self, topic_id) -> namedtuple:
+        return series_to_namedtuple(topic_id, self.repr_df.loc[topic_id])
+
+    def _tweets_in_time_range(self, start_ts, end_ts) -> pd.DataFrame:
+        mask = is_between(self.tweet_df['created_at'], start_ts, end_ts)
+        return self.tweet_df[mask]
 
     def _log_assignment_rate(self, df: pd.DataFrame):
         n_unassigned = np.sum(df['label'] == -1)
