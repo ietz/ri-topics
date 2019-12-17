@@ -40,10 +40,10 @@ class TopicModel:
     persisted_tweet_attributes = ['label',  'probability'] + ['created_at']
     persisted_representative_attributes = ['representative_id'] + ['text']
 
-    def __init__(self, account_name):
+    def __init__(self, account_name, clusterer_factory: Callable[[], Clusterer] = Clusterer):
         self.account_name = account_name
 
-        self.clusterer = Clusterer()
+        self.clusterer = clusterer_factory()
         self.tweet_df: Optional[pd.DataFrame] = None
         self.repr_df: Optional[pd.DataFrame] = None
 

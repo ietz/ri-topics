@@ -1,6 +1,7 @@
 import dataclasses
 from collections import namedtuple
 from typing import List, Any, Dict, Optional
+from unittest.mock import Mock
 from urllib.parse import urljoin
 
 import pandas as pd
@@ -53,3 +54,26 @@ def clamp(v_min, v, v_max):
 
 def series_to_namedtuple(index, series: pd.Series) -> namedtuple:
     return namedtuple('Row', ['Index'] + list(series.index))(index, *series)
+
+
+def default_value(t):
+    if dataclasses.is_dataclass(t):
+        return {
+            field.name: default_value(field.type)
+            for field in dataclasses.fields(t)
+        }
+    else:
+        return getattr(t, '__origin__', t)()
+
+
+def mock_dataclass_asdict(obj):
+    if isinstance(obj, Mock) and dataclasses.is_dataclass(obj._spec_class):
+        filled_fields = {
+            field.name: getattr(obj, field.name)
+            for field in dataclasses.fields(obj._spec_class)
+            if hasattr(obj, field.name)
+        }
+
+        return {**default_value(obj._spec_class), **filled_fields}
+    else:
+        return dataclasses.asdict(obj)
