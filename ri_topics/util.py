@@ -2,7 +2,6 @@ import dataclasses
 from collections import namedtuple
 from typing import List, Any, Dict, Optional
 from unittest.mock import Mock
-from urllib.parse import urljoin
 
 import pandas as pd
 
@@ -12,10 +11,7 @@ def force_trailing_slash(url: str) -> str:
 
 
 def subpath_join(base_url: str, subpath: str) -> str:
-    return urljoin(
-        force_trailing_slash(base_url),
-        subpath.lstrip('/')
-    )
+    return force_trailing_slash(base_url) + subpath.lstrip('/')
 
 
 def init_from_dicts(dataclass, data_dicts: List[Dict[str, Any]]):

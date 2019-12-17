@@ -47,5 +47,5 @@ class RiStorageTwitter:
         return [name for name in all_names if name]  # required to filter out invalid account ""
 
     def get_all_tweets_by_account_name(self, account_name: str) -> List[Tweet]:
-        response = self.session.get(f'/account_name/{account_name}/currentweek')
+        response = self.session.get(f'/account_name/{account_name}/all')
         return init_from_dicts(Tweet, response.json())
