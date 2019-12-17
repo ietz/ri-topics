@@ -1,7 +1,7 @@
 /.cache/
-/.coverage/
 /coverage-reports/
 /data/
+/.coverage
 /.env
 /Dockerfile
 /Readme.md

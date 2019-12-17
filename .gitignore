@@ -1,7 +1,7 @@
 /.cache/
-/.coverage/
 /coverage-reports/html/
 /data/
+/.coverage
 /.env
 /.env.*
 !/.env.example
