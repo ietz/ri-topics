@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 from ri_topics.dtos import Trend, TopicActivity, TopicContent
 from ri_topics.topics import TopicModelManager
@@ -10,6 +11,7 @@ class RiTopicsApp(Flask):
 
 
 app = RiTopicsApp(__name__)
+CORS(app)
 
 
 @app.route('/<account_name>/trends')

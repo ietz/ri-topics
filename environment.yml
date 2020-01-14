@@ -6,6 +6,7 @@ channels:
   - defaults
 dependencies:
   - flask=1.1.1
+  - flask-cors=3.0.8
   - hdbscan=0.8.23
   - loguru=0.3.2
   - nltk=3.4.5
