@@ -1,3 +1,5 @@
+from itertools import takewhile
+
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
@@ -24,8 +26,8 @@ def trends(account_name: str):
     all_trends = [Trend.from_df_tuple(t) for t in trend_df.itertuples()]
 
     return jsonify({
-        'falling': all_trends[:3],
-        'rising': all_trends[-3:][::-1],
+        'falling': list(takewhile(lambda t: t.score < 0, all_trends)),
+        'rising': list(takewhile(lambda t: t.score > 0, all_trends[::-1])),
     })
 
 
