@@ -1,5 +1,6 @@
 import logging
 import warnings
+from typing import Dict, Union
 
 import numba
 from loguru import logger
@@ -9,6 +10,10 @@ def setup_logging():
     hide_known_warnings()
     intercept_warnings()
     intercept_standard_logging()
+    override_log_levels({
+        'numba.byteflow': logging.INFO,
+        'numba.interpreter': logging.INFO,
+    })
 
 
 def hide_known_warnings():
@@ -17,6 +22,11 @@ def hide_known_warnings():
 
 def intercept_warnings():
     warnings.showwarning = lambda message, *args, **kwargs: logger.warning(message)
+
+
+def override_log_levels(module_level: Dict[str, Union[str, int]]):
+    for module, level in module_level.items():
+        logging.getLogger(module).setLevel(level)
 
 
 def intercept_standard_logging():
