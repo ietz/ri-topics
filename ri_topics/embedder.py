@@ -10,7 +10,10 @@ from ri_topics.preprocessing import Document
 
 
 class Embedder:
-    def __init__(self, model: SentenceTransformer = SentenceTransformer(os.getenv('SBERT_MODEL'))):
+    def __init__(self, model: SentenceTransformer = None):
+        if model is None:
+            model = SentenceTransformer(os.getenv('SBERT_MODEL'))
+
         self.model = model
 
     def embed(self, docs: List[Document]):
