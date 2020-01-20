@@ -1,4 +1,5 @@
 import dataclasses
+import math
 from collections import namedtuple
 from typing import List, Any, Dict, Optional
 from unittest.mock import Mock
@@ -73,3 +74,10 @@ def mock_dataclass_asdict(obj):
         return {**default_value(obj._spec_class), **filled_fields}
     else:
         return dataclasses.asdict(obj)
+
+
+def pct(a, b) -> float:
+    if b != 0:
+        return a / b
+    else:
+        return math.inf

@@ -2,7 +2,7 @@ import dataclasses
 import pickle
 from collections import namedtuple
 from pathlib import Path
-from typing import List, Optional, Callable
+from typing import List, Optional, Callable, Dict
 
 import numpy as np
 import pandas as pd
@@ -13,7 +13,7 @@ from ri_topics.clustering import Clusterer, ClusterAssignment
 from ri_topics.config import MODEL_DIR
 from ri_topics.embedder import Embedder
 from ri_topics.openreq.ri_storage_twitter import RiStorageTwitter, Tweet
-from ri_topics.util import is_between, df_without, series_to_namedtuple
+from ri_topics.util import is_between, df_without, series_to_namedtuple, default_value, pct
 
 
 def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
@@ -21,19 +21,26 @@ def select_representatives(tweet_df: pd.DataFrame) -> pd.DataFrame:
     representative_idxs = labeled_tweets.groupby('label')['probability'].idxmax()
     representatives = tweet_df.loc[representative_idxs]
     return representatives \
+        .rename_axis('representative_id') \
         .reset_index() \
-        .rename(columns={'status_id': 'representative_id'}) \
         .set_index('label')
 
 
 def tweets_to_df(tweets: List[Tweet]):
-    df = pd.io.json.json_normalize([dataclasses.asdict(tweet) for tweet in tweets])
-    df['sentiment'] = df['sentiment'].astype('category')
-    df['tweet_class'] = df['tweet_class'].astype('category')
-    df['created_at'] = pd.to_datetime(df['created_at_full'])
-    df = df.drop(columns=['created_at_full'])
-    with_idx = df.set_index('status_id')
-    return with_idx
+    def from_dicts(dicts: List[Dict]) -> pd.DataFrame:
+        df = pd.io.json.json_normalize(dicts)
+        df['sentiment'] = df['sentiment'].astype('category')
+        df['tweet_class'] = df['tweet_class'].astype('category')
+        df['created_at'] = pd.to_datetime(df['created_at_full'])
+        df = df.drop(columns=['created_at_full'])
+        with_idx = df.set_index('status_id')
+        return with_idx
+
+    if len(tweets) > 0:
+        return from_dicts([dataclasses.asdict(tweet) for tweet in tweets])
+    else:
+        # generate empty df by using the default values of Tweet dataclass for field and types
+        return from_dicts([default_value(Tweet)]).iloc[:0]
 
 
 class TopicModel:
@@ -75,7 +82,7 @@ class TopicModel:
 
         df_en = df[df['lang'] == 'en']
         n_discarded = len(df) - len(df_en)
-        logger.info(f'Discarding {n_discarded} ({n_discarded / len(df):0.01%}) non-english tweets')
+        logger.info(f'Discarding {n_discarded} ({pct(n_discarded, len(df)):0.01%}) non-english tweets')
         return df_en
 
     def _process_tweets(self, full_tweet_df: pd.DataFrame, embedder: Embedder, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
