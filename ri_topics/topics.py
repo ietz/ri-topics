@@ -80,18 +80,21 @@ class TopicModel:
         df = df_without(tweets_to_df(tweets), self.tweet_df)
         logger.info(f'Retrieved {len(df)} new tweets')
 
-        df_en = df[df['lang'] == 'en']
-        n_discarded = len(df) - len(df_en)
-        logger.info(f'Discarding {n_discarded} ({pct(n_discarded, len(df)):0.01%}) non-english tweets')
-        return df_en
+        return df
 
     def _process_tweets(self, full_tweet_df: pd.DataFrame, embedder: Embedder, assign: Callable[[np.ndarray], ClusterAssignment]) -> pd.DataFrame:
-        embeddings = embedder.embed_texts(full_tweet_df['text'])
+        language_mask = full_tweet_df['lang'] == 'en'
+        account_mask = full_tweet_df['user_name'] != self.account_name
+        filtered_tweet_df = full_tweet_df[language_mask & account_mask]
+        n_discarded = len(full_tweet_df) - len(filtered_tweet_df)
+        logger.info(f'Discarding {n_discarded} ({pct(n_discarded, len(full_tweet_df)):0.01%}) tweets')
+
+        embeddings = embedder.embed_texts(filtered_tweet_df['text'])
         logger.info('Assigning tweets to clusters')
         assignment = assign(embeddings)
 
         logger.info(f'Processing clusters')
-        update_df = full_tweet_df.copy()
+        update_df = filtered_tweet_df.copy()
         update_df['label'] = assignment.labels
         update_df['probability'] = assignment.probabilities
 
