@@ -18,7 +18,7 @@ def find_trends(model: TopicModel, start, end) -> pd.DataFrame:
     current = model.count_tweets_by_topic(start_ts, end_ts)['tweet_count']
     score = current - before
 
-    return model.repr_df.join([
+    return model.topic_df.join([
         before.rename('before_count'),
         current.rename('current_count'),
         score.rename('score'),

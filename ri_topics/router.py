@@ -1,3 +1,4 @@
+import http
 from itertools import takewhile
 
 from flask import Flask, request, jsonify
@@ -16,7 +17,7 @@ app = RiTopicsApp(__name__)
 CORS(app)
 
 
-@app.route('/<account_name>/trends')
+@app.route('/<account_name>/trends', methods=['GET'])
 def trends(account_name: str):
     start = request.args.get('start')
     end = request.args.get('end')
@@ -31,7 +32,7 @@ def trends(account_name: str):
     })
 
 
-@app.route('/<account_name>/frequent')
+@app.route('/<account_name>/frequent', methods=['GET'])
 def frequent(account_name: str):
     start = request.args.get('start', default=None)
     end = request.args.get('end', default=None)
@@ -42,7 +43,7 @@ def frequent(account_name: str):
     return jsonify([TopicActivity.from_df_tuple(t) for t in top_df.itertuples()])
 
 
-@app.route('/<account_name>/topics/<int:topic_id>')
+@app.route('/<account_name>/topics/<int:topic_id>', methods=['GET'])
 def topic(account_name: str, topic_id: int):
     model = app.model_manager.get(account_name)
 
@@ -52,3 +53,16 @@ def topic(account_name: str, topic_id: int):
         .sort_values('probability', ascending=False)
 
     return jsonify(TopicContent.from_df_tuple(topic_tuple, list(tweet_df.index)))
+
+
+@app.route('/<account_name>/topics/<int:topic_id>/', methods=['PATCH'])
+def patch_topic(account_name: str, topic_id: int):
+    content = request.get_json()
+
+    model = app.model_manager.get(account_name)
+
+    if 'name' in content:
+        model.topic_df.loc[topic_id, 'name'] = content['name']
+        app.model_manager.save(model)
+
+    return '', http.HTTPStatus.NO_CONTENT

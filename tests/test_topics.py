@@ -70,7 +70,7 @@ class TestTopicModel(unittest.TestCase):
         # Initial training
         topic_model.train(embedder, storage)
         self.assertSetEqual({'0', '1', '3'}, set(topic_model.tweet_df.index))
-        self.assertSetEqual({0, 1}, set(topic_model.repr_df.index))
+        self.assertSetEqual({0, 1}, set(topic_model.topic_df.index))
 
         # Update
         topic_model.update(embedder, storage)

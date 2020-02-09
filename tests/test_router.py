@@ -22,12 +22,12 @@ def get_dummy_topic_model(*args, **kwargs):
         ],
         index=['0', '1', '10', '11', '20', '90'],
     )
-    model.repr_df = pd.DataFrame(
-        columns=['representative_id', 'text'],
+    model.topic_df = pd.DataFrame(
+        columns=['representative_id', 'text', 'name'],
         data=[
-            [ '0', 'Text for cluster 0'],
-            ['10', 'Text for cluster 1'],
-            ['20', 'Text for cluster 2'],
+            [ '0', 'Text for cluster 0', None],
+            ['10', 'Text for cluster 1', 'Name for cluster 1'],
+            ['20', 'Text for cluster 2', None],
         ],
         index=[0, 1, 2],
     )
@@ -45,9 +45,9 @@ class TestRestEndpoint(unittest.TestCase):
         self.addCleanup(manager_path_patch.stop)
 
         self.topic_data = {
-            0: {'topic_id': 0, 'representative': {'status_id':  '0', 'text': 'Text for cluster 0'}},
-            1: {'topic_id': 1, 'representative': {'status_id':  '10', 'text': 'Text for cluster 1'}},
-            2: {'topic_id': 2, 'representative': {'status_id':  '20', 'text': 'Text for cluster 2'}},
+            0: {'topic_id': 0, 'representative': {'status_id':  '0', 'text': 'Text for cluster 0'}, 'name': None},
+            1: {'topic_id': 1, 'representative': {'status_id':  '10', 'text': 'Text for cluster 1'}, 'name': 'Name for cluster 1'},
+            2: {'topic_id': 2, 'representative': {'status_id':  '20', 'text': 'Text for cluster 2'}, 'name': None},
         }
 
         app.model_manager = manager

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -18,6 +18,7 @@ class Representative:
 @dataclass
 class Topic:
     topic_id: str
+    name: Optional[str]
     representative: Representative
 
 
@@ -29,6 +30,7 @@ class TopicContent(Topic):
     def from_df_tuple(t, member_ids: List[int]):
         return TopicContent(
             topic_id=t.Index,
+            name=t.name,
             representative=Representative.from_df_tuple(t),
             member_ids=member_ids,
         )
@@ -42,6 +44,7 @@ class TopicActivity(Topic):
     def from_df_tuple(t):
         return TopicActivity(
             topic_id=t.Index,
+            name=t.name,
             representative=Representative.from_df_tuple(t),
             occurrences=t.tweet_count,
         )
@@ -62,6 +65,7 @@ class Trend(Topic):
     def from_df_tuple(t):
         return Trend(
             topic_id=t.Index,
+            name=t.name,
             representative=Representative.from_df_tuple(t),
             score=t.score,
             occurrences=TrendOccurrences(

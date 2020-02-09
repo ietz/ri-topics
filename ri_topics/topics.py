@@ -45,14 +45,14 @@ def tweets_to_df(tweets: List[Tweet]):
 
 class TopicModel:
     persisted_tweet_attributes = ['label',  'probability'] + ['created_at']
-    persisted_representative_attributes = ['representative_id'] + ['text']
+    persisted_representative_attributes = ['representative_id'] + ['text', 'name']
 
     def __init__(self, account_name, clusterer_factory: Callable[[], Clusterer] = Clusterer):
         self.account_name = account_name
 
         self.clusterer = clusterer_factory()
         self.tweet_df: Optional[pd.DataFrame] = None
-        self.repr_df: Optional[pd.DataFrame] = None
+        self.topic_df: Optional[pd.DataFrame] = None
 
     def train(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Training model {self.account_name}')
@@ -60,11 +60,14 @@ class TopicModel:
         full_tweet_df = self._get_new_tweets(storage)
         labeled_tweet_df = self._process_tweets(full_tweet_df, embedder, assign=self.clusterer.fit)
         self.tweet_df = labeled_tweet_df[TopicModel.persisted_tweet_attributes]
-        self.repr_df = select_representatives(labeled_tweet_df)[TopicModel.persisted_representative_attributes]
+
+        topic_df = select_representatives(labeled_tweet_df)
+        topic_df['name'] = None
+        self.topic_df = topic_df[TopicModel.persisted_representative_attributes]
 
         n_assigned = np.sum(self.tweet_df['label'] >= 0)
         logger.info(f'Assigned {n_assigned} ({n_assigned/len(self.tweet_df):0.01%}) tweets '
-                    f'into {len(self.repr_df)} clusters')
+                    f'into {len(self.topic_df)} clusters')
 
     def update(self, embedder: Embedder, storage: RiStorageTwitter):
         logger.info(f'Predicting new tweets for {self.account_name}')
@@ -103,12 +106,12 @@ class TopicModel:
     def count_tweets_by_topic(self, start_ts=None, end_ts=None) -> pd.DataFrame:
         tweets = self._tweets_in_time_range(start_ts, end_ts)
         tweet_counts = tweets.groupby('label').size().rename('tweet_count')
-        act = self.repr_df.join(tweet_counts, how='outer')
+        act = self.topic_df.join(tweet_counts, how='outer')
         act['tweet_count'] = act['tweet_count'].fillna(0)
         return act
 
     def topic_by_id(self, topic_id) -> namedtuple:
-        return series_to_namedtuple(topic_id, self.repr_df.loc[topic_id])
+        return series_to_namedtuple(topic_id, self.topic_df.loc[topic_id])
 
     def _tweets_in_time_range(self, start_ts, end_ts) -> pd.DataFrame:
         mask = is_between(self.tweet_df['created_at'], start_ts, end_ts)
