@@ -1,7 +1,10 @@
 import dataclasses
 import pickle
+import threading
+import time
 from collections import namedtuple
 from pathlib import Path
+from schedule import Scheduler
 from typing import List, Optional, Callable, Dict
 
 import numpy as np
@@ -153,6 +156,23 @@ class TopicModelManager:
     def update_all(self):
         for name in self.model_names:
             self.save(self._update(name))
+
+    def schedule_updates(self) -> threading.Event:
+        scheduler = Scheduler()
+        scheduler.every().day.at('04:30').do(self.update_all)
+
+        cease_run = threading.Event()
+
+        class ScheduleThread(threading.Thread):
+            def run(self) -> None:
+                while not cease_run.is_set():
+                    scheduler.run_pending()
+                    time.sleep(1)
+
+        schedule_thread = ScheduleThread()
+        schedule_thread.start()
+
+        return cease_run
 
     @property
     def model_names(self) -> List[str]:

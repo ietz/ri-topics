@@ -1,4 +1,5 @@
 import os
+
 from dotenv import load_dotenv
 
 from ri_topics.embedder import Embedder
@@ -19,6 +20,7 @@ if __name__ == '__main__':
 
     manager = TopicModelManager(embedder, rist)
     manager.prepare_all()
+    manager.schedule_updates()
 
     app.model_manager = manager
     app.run(host='0.0.0.0', port='8888')
