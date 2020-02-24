@@ -1,12 +1,10 @@
 import http
-from itertools import takewhile
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
-from ri_topics.dtos import Trend, TopicActivity, TopicContent
+from ri_topics.dtos import Topic
 from ri_topics.topics import TopicModelManager
-from ri_topics.trend import find_trends, find_top
 
 
 class RiTopicsApp(Flask):
@@ -17,42 +15,16 @@ app = RiTopicsApp(__name__)
 CORS(app)
 
 
-@app.route('/<account_name>/trends', methods=['GET'])
-def trends(account_name: str):
-    start = request.args.get('start')
-    end = request.args.get('end')
-
-    model = app.model_manager.get(account_name)
-    trend_df = find_trends(model, start, end).sort_values('score')
-    all_trends = [Trend.from_df_tuple(t) for t in trend_df.itertuples()]
-
-    return jsonify({
-        'falling': list(takewhile(lambda t: t.score < 0, all_trends)),
-        'rising': list(takewhile(lambda t: t.score > 0, all_trends[::-1])),
-    })
-
-
-@app.route('/<account_name>/frequent', methods=['GET'])
+@app.route('/<account_name>/topics/', methods=['GET'])
 def frequent(account_name: str):
-    start = request.args.get('start', default=None)
-    end = request.args.get('end', default=None)
-
     model = app.model_manager.get(account_name)
-    top_df = find_top(model, start, end).sort_values('tweet_count', ascending=False)
+    member_ids_by_label = {
+        label: list(ids)
+        for label, ids
+        in model.tweet_df.reset_index().groupby('label')['status_id']
+    }
 
-    return jsonify([TopicActivity.from_df_tuple(t) for t in top_df.itertuples()])
-
-
-@app.route('/<account_name>/topics/<int:topic_id>', methods=['GET'])
-def topic(account_name: str, topic_id: int):
-    model = app.model_manager.get(account_name)
-
-    topic_tuple = model.topic_by_id(topic_id)
-    tweet_df = model \
-        .tweet_df[model.tweet_df['label'] == topic_id] \
-        .sort_values('probability', ascending=False)
-
-    return jsonify(TopicContent.from_df_tuple(topic_tuple, list(tweet_df.index)))
+    return jsonify([Topic.from_df_tuple(t, member_ids_by_label[t.Index]) for t in model.topic_df.itertuples()])
 
 
 @app.route('/<account_name>/topics/<int:topic_id>/', methods=['PATCH'])

@@ -1,6 +1,5 @@
 import dataclasses
 import math
-from collections import namedtuple
 from typing import List, Any, Dict, Optional
 from unittest.mock import Mock
 
@@ -27,14 +26,6 @@ def init_from_dicts(dataclass, data_dicts: List[Dict[str, Any]]):
     ]
 
 
-def is_between(a, start=None, end=None):
-    if start is None and end is None:
-        # noinspection PyComparisonWithNone
-        return True | (a == None)
-    else:
-        return (start is None or start <= a) & (end is None or a < end)
-
-
 def df_without(left: pd.DataFrame, right: Optional[pd.DataFrame]) -> pd.DataFrame:
     """Performs left outer exclusive join. Result contains all rows from the left df except for
     those which are also present in the right df."""
@@ -47,10 +38,6 @@ def df_without(left: pd.DataFrame, right: Optional[pd.DataFrame]) -> pd.DataFram
 
 def clamp(v_min, v, v_max):
     return max(v_min, min(v, v_max))
-
-
-def series_to_namedtuple(index, series: pd.Series) -> namedtuple:
-    return namedtuple('Row', ['Index'] + list(series.index))(index, *series)
 
 
 def default_value(t):

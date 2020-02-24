@@ -14,15 +14,8 @@ from ri_topics.util import mock_dataclass_asdict
 embedding_dim = 768
 account_names = ['FitbitSupport']
 all_tweets = [
-    Mock(spec=Tweet, **{'status_id': str(idx), 'created_at_full': date, 'lang': 'en', 'text': f'{idx}'})
-    for idx, date in enumerate([
-        'Tue Dec 17 07:25:24 +0000 2019',
-        'Tue Dec 17 03:08:09 +0000 2019',
-        'Mon Dec 16 20:05:09 +0000 2019',
-        'Mon Dec 16 19:45:14 +0000 2019',
-        'Mon Dec 16 15:45:25 +0000 2019',
-        'Mon Dec 16 03:01:32 +0000 2019',
-    ])
+    Mock(spec=Tweet, **{'status_id': str(idx), 'lang': 'en', 'text': f'{idx}'})
+    for idx in range(6)
 ]
 initial_tweets = [all_tweets[i] for i in [0, 1, 3]]
 update_tweets = [all_tweets[i] for i in [1, 2, 3, 4, 5]]

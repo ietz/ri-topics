@@ -20,56 +20,13 @@ class Topic:
     topic_id: str
     name: Optional[str]
     representative: Representative
-
-
-@dataclass
-class TopicContent(Topic):
     member_ids: List[int]
 
     @staticmethod
     def from_df_tuple(t, member_ids: List[int]):
-        return TopicContent(
+        return Topic(
             topic_id=t.Index,
             name=t.name,
             representative=Representative.from_df_tuple(t),
             member_ids=member_ids,
-        )
-
-
-@dataclass
-class TopicActivity(Topic):
-    occurrences: int
-
-    @staticmethod
-    def from_df_tuple(t):
-        return TopicActivity(
-            topic_id=t.Index,
-            name=t.name,
-            representative=Representative.from_df_tuple(t),
-            occurrences=t.tweet_count,
-        )
-
-
-@dataclass
-class TrendOccurrences:
-    before: int
-    current: int
-
-
-@dataclass
-class Trend(Topic):
-    score: float
-    occurrences: TrendOccurrences
-
-    @staticmethod
-    def from_df_tuple(t):
-        return Trend(
-            topic_id=t.Index,
-            name=t.name,
-            representative=Representative.from_df_tuple(t),
-            score=t.score,
-            occurrences=TrendOccurrences(
-                before=t.before_count,
-                current=t.current_count,
-            )
         )
